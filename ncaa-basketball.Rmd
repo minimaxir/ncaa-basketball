@@ -1,0 +1,168 @@
+---
+title: "A Visual Look at Stack Overflow's Question Tags"
+author: "Max Woolf (@minimaxir)"
+date: "2017-02-09"
+output:
+  html_notebook:
+    highlight: tango
+    mathjax: null
+    number_sections: yes
+    theme: spacelab
+---
+
+This R Notebook is the complement to my blog post [A Visual Overview of Stack Overflow's Question Tags](http://minimaxir.com/2018/02/stack-overflow-questions/).
+
+This notebook is licensed under the MIT License. If you use the code or data visualization designs contained within this notebook, it would be greatly appreciated if proper attribution is given back to this notebook and/or myself. Thanks! :)
+
+# Setup
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(scales)
+library(viridis)
+
+source("bb_court_college.R")
+
+sessionInfo()
+Sys.setenv(TZ="America/Los_Angeles")
+```
+
+```{r}
+theme_set(theme_minimal(base_size=9, base_family="Source Sans Pro") +
+            theme(plot.title = element_text(size=8, family="Source Sans Pro Bold", margin=margin(t = -0.1, b = 0.1, unit='cm')),
+                  axis.title.x = element_text(size=8),
+                  axis.title.y = element_text(size=8),
+                  plot.subtitle = element_text(family="Source Sans Pro Semibold", color="#969696", size=6),
+                  plot.caption = element_text(size=6, color="#969696"),
+                  legend.text = element_text(size = 6),
+                  legend.key.width = unit(0.25, unit='cm')))
+```
+
+Draw the court, based off of https://gist.github.com/edkupfer/6354964
+
+```{r}
+bb_court <- ggplot(data=data.frame(x=1,y=1),aes(x,y))+
+   ###outside box:
+geom_path(data=data.frame(x=c(-25,-25,25,25,-25),y=c(-47,47,47,-47,-47)))+
+   ###halfcourt line:
+geom_path(data=data.frame(x=c(-25,25),y=c(0,0)))+
+   ###halfcourt semicircle:
+geom_path(data=data.frame(x=c(-6000:(-1)/1000,1:6000/1000),y=c(sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(x=x,y=y))+
+geom_path(data=data.frame(x=c(-6000:(-1)/1000,1:6000/1000),y=-c(sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(x=x,y=y))+
+   ###solid FT semicircle above FT line:
+geom_path(data=data.frame(x=c(-6000:(-1)/1000,1:6000/1000),y=c(28-sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(x=x,y=y))+
+geom_path(data=data.frame(x=c(-6000:(-1)/1000,1:6000/1000),y=-c(28-sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(x=x,y=y))+
+   ###dashed FT semicircle below FT line:
+geom_path(data=data.frame(x=c(-6000:(-1)/1000,1:6000/1000),y=c(28+sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(x=x,y=y),linetype='dashed')+
+geom_path(data=data.frame(x=c(-6000:(-1)/1000,1:6000/1000),y=-c(28+sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))),aes(x=x,y=y),linetype='dashed')+
+   ###key:
+geom_path(data=data.frame(x=c(-8,-8,8,8,-8),y=c(47,28,28,47,47)))+
+geom_path(data=data.frame(x=-c(-8,-8,8,8,-8),y=-c(47,28,28,47,47)))+
+   ###box inside the key:
+geom_path(data=data.frame(x=c(-6,-6,6,6,-6),y=c(47,28,28,47,47)))+
+geom_path(data=data.frame(x=c(-6,-6,6,6,-6),y=-c(47,28,28,47,47)))+
+   ###restricted area semicircle:
+geom_path(data=data.frame(x=c(-4000:(-1)/1000,1:4000/1000),y=c(41.25-sqrt(4^2-c(-4000:(-1)/1000,1:4000/1000)^2))),aes(x=x,y=y))+
+geom_path(data=data.frame(x=c(-4000:(-1)/1000,1:4000/1000),y=-c(41.25-sqrt(4^2-c(-4000:(-1)/1000,1:4000/1000)^2))),aes(x=x,y=y))+
+   ###rim:
+geom_path(data=data.frame(x=c(-750:(-1)/1000,1:750/1000,750:1/1000,-1:-750/1000),y=c(c(41.75+sqrt(0.75^2-c(-750:(-1)/1000,1:750/1000)^2)),c(41.75-sqrt(0.75^2-c(750:1/1000,-1:-750/1000)^2)))),aes(x=x,y=y))+
+geom_path(data=data.frame(x=c(-750:(-1)/1000,1:750/1000,750:1/1000,-1:-750/1000),y=-c(c(41.75+sqrt(0.75^2-c(-750:(-1)/1000,1:750/1000)^2)),c(41.75-sqrt(0.75^2-c(750:1/1000,-1:-750/1000)^2)))),aes(x=x,y=y))+
+   ###backboard:
+geom_path(data=data.frame(x=c(-3,3),y=c(43,43)),lineend='butt')+
+geom_path(data=data.frame(x=c(-3,3),y=-c(43,43)),lineend='butt')+
+   ###three-point line:
+geom_path(data=data.frame(x=c(-22,-22,-22000:(-1)/1000,1:22000/1000,22,22),y=c(47,47-169/12,41.75-sqrt(23.75^2-c(-22000:(-1)/1000,1:22000/1000)^2),47-169/12,47)),aes(x=x,y=y))+
+geom_path(data=data.frame(x=c(-22,-22,-22000:(-1)/1000,1:22000/1000,22,22),y=-c(47,47-169/12,41.75-sqrt(23.75^2-c(-22000:(-1)/1000,1:22000/1000)^2),47-169/12,47)),aes(x=x,y=y))+
+   ###fix aspect ratio to 1:1
+coord_fixed()
+# coord_flip()
+```
+
+```{r}
+ggsave("bbcourt.png", bb_court, width=5, height=3)
+```
+
+
+```{r}
+file_path <- "basketball.csv"
+df <- read_csv(file_path)
+df %>% head()
+```
+
+```{r}
+df <- df %>% mutate(
+  x = rescale(x, to = c(-2,96)),
+  y = rescale(y, to = c(-55,2))
+)
+
+df %>% head()
+```
+
+
+```{r}
+plot <- P_180 +
+          # ggplot(df, aes(x=x, y=y)) +
+          stat_summary_2d(data=df, aes(x=x, y=y, z=attempts), alpha=0.8, binwidth=c(25/(2*25), 50/(2*47)), fun=sum) +
+          # scale_x_continuous(limits=c(-y_range, y_range)) +
+          # scale_y_continuous(limits=c(-x_range, x_range)) +
+          scale_fill_viridis(option='inferno', end=1, labels=comma, trans='log10') +
+          labs(title='Foursquare Ratings of Places in San Francisco, by Geographic Location',
+                subtitle='via Foursquare data. Places used in this visualization have atleast 100 Checkins and 10 Ratings.',
+               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
+               caption = "Max Woolf — minimaxir.com") +
+          theme(
+                plot.title = element_text(size=10, family="Source Sans Pro Bold", margin=margin(t = -0.1, b = 0.0, unit='cm')),
+                axis.title.x = element_blank(),
+                axis.title.y = element_blank(),
+                axis.text.x = element_blank(),
+                axis.text.y = element_blank(),
+                panel.grid = element_blank(),
+                legend.position = 'top',
+                #axis.text.y = element_text(size = 5),
+                legend.text = element_text(size = 6),
+                legend.title = element_text(size = 6),
+                legend.key.width = unit(1, unit='cm'),
+                legend.key.height = unit(0.25, unit='cm'),
+                legend.margin = margin(c(0, 0, -0.4, 0), unit='cm'))
+
+ggsave('ncaa_count_attempts.png', plot, width=5, height=3)
+```
+
+```{r}
+plot <- bb_court +
+          stat_summary_2d(data=df, aes(x=y, y=x, z=avg_points), alpha=0.8, binwidth=c(25/(2*25), 50/(2*47)), fun=mean, drop=T) +
+          scale_fill_viridis(option='inferno', end=1) +
+          labs(title='Foursquare Ratings of Places in San Francisco, by Geographic Location',
+                subtitle='via Foursquare data. Places used in this visualization have atleast 100 Checkins and 10 Ratings.',
+               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
+               caption = "Max Woolf — minimaxir.com") +
+          theme(
+                plot.title = element_text(size=10, family="Source Sans Pro Bold", margin=margin(t = -0.1, b = 0.0, unit='cm')),
+                axis.title.x = element_blank(),
+                axis.title.y = element_blank(),
+                axis.text.x = element_blank(),
+                axis.text.y = element_blank(),
+                panel.grid = element_blank(),
+                legend.position = 'top',
+                #axis.text.y = element_text(size = 5),
+                legend.text = element_text(size = 6),
+                legend.title = element_text(size = 6),
+                legend.key.width = unit(1, unit='cm'),
+                legend.key.height = unit(0.25, unit='cm'),
+                legend.margin = margin(c(0, 0, -0.4, 0), unit='cm'))
+
+ggsave('ncaa_count_avg_points.png', plot, width=5, height=3)
+```
+
+# LICENSE
+
+The MIT License (MIT)
+
+Copyright (c) 2018 Max Woolf
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
