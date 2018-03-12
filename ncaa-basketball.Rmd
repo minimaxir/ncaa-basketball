@@ -92,8 +92,8 @@ df %>% head()
 
 ```{r}
 df <- df %>% mutate(
-  x = rescale(x, to = c(-2,96)),
-  y = rescale(y, to = c(-55,2))
+  x = rescale(x, to = c(0,94)),
+  y = rescale(y, to = c(-50,0))
 )
 
 df %>% head()
@@ -107,8 +107,8 @@ plot <- P_180 +
           # scale_x_continuous(limits=c(-y_range, y_range)) +
           # scale_y_continuous(limits=c(-x_range, x_range)) +
           scale_fill_viridis(option='inferno', end=1, labels=comma, trans='log10') +
-          labs(title='Foursquare Ratings of Places in San Francisco, by Geographic Location',
-                subtitle='via Foursquare data. Places used in this visualization have atleast 100 Checkins and 10 Ratings.',
+          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
+                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
                fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
           theme(
@@ -126,16 +126,16 @@ plot <- P_180 +
                 legend.key.height = unit(0.25, unit='cm'),
                 legend.margin = margin(c(0, 0, -0.4, 0), unit='cm'))
 
-ggsave('ncaa_count_attempts.png', plot, width=5, height=3)
+ggsave('ncaa_count_attempts.png', plot, width=6, height=4)
 ```
 
 ```{r}
-plot <- bb_court +
-          stat_summary_2d(data=df, aes(x=y, y=x, z=avg_points), alpha=0.8, binwidth=c(25/(2*25), 50/(2*47)), fun=mean, drop=T) +
+plot <- P_180 +
+          stat_summary_2d(data=df, aes(x=x, y=y, z=avg_points), alpha=0.8, binwidth=c(25/(2*25), 50/(2*47)), fun=mean, drop=T) +
           scale_fill_viridis(option='inferno', end=1) +
-          labs(title='Foursquare Ratings of Places in San Francisco, by Geographic Location',
-                subtitle='via Foursquare data. Places used in this visualization have atleast 100 Checkins and 10 Ratings.',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
+          labs(title=sprintf('Average Points Earned From of %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
+                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+               fill='Average Points Earned From Shot Attempts\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
           theme(
                 plot.title = element_text(size=10, family="Source Sans Pro Bold", margin=margin(t = -0.1, b = 0.0, unit='cm')),
@@ -152,7 +152,7 @@ plot <- bb_court +
                 legend.key.height = unit(0.25, unit='cm'),
                 legend.margin = margin(c(0, 0, -0.4, 0), unit='cm'))
 
-ggsave('ncaa_count_avg_points.png', plot, width=5, height=3)
+ggsave('ncaa_count_avg_points.png', plot, width=6, height=4)
 ```
 
 # LICENSE
