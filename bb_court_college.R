@@ -142,3 +142,16 @@ P_180 <- ggplot() + geom_polygon(data = rotate_court(court, theta = pi/2), aes(x
   ylim(-55,2) +
   scale_x_continuous(breaks = c(0, 23.5, 47, 70.5, 94)) +
   scale_y_continuous(breaks = c(0, -12.5, -25, -37.5, -50))
+
+# Half court
+P_half <- ggplot() + geom_polygon(data = court[court$side==1,], aes(x = x, y = y, group = group), col = "black") +
+  coord_equal() +
+  xlim(-3,54) +
+  ylim(-3,50) +
+  scale_y_continuous(breaks = c(0, 23.5, 47)) +
+  scale_x_continuous(breaks = c(0, 12.5, 25, 37.5, 50)) +
+  xlab("") + ylab("") +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank(), axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(), axis.title = element_blank()
+  )
