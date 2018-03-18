@@ -531,10 +531,11 @@ df_half_types_agg$shot_type <- factor(df_half_types_agg$shot_type, levels=rev(df
 ```
 
 ```{r}
-plot <- ggplot(df_half_types_agg, aes(x=shot_type, y=prop_attempts, fill=shot_type)) +
-          geom_bar(stat="identity") +
+plot <- ggplot(df_half_types_agg, aes(x=shot_type, y=prop_attempts, fill=shot_type, color=shot_type)) +
+          geom_bar(stat="identity", color=NA) +
           geom_text(aes(label=sprintf('%0.1f%%', prop_attempts*100)), size=3, color="black", family="Source Sans Pro Bold", hjust=-0.25) +
           coord_flip() +
+          scale_color_brewer(palette="Set1", guide=F) +
           scale_fill_brewer(palette="Set1", guide=F) +
           scale_y_continuous(labels=percent, limits=c(0,1)) +
           labs(title=sprintf('Proportion of %s Basketball Shots by Type from NCAA Games', df_half_types_agg %>% pull(total_attempts) %>% sum() %>% comma()),
@@ -599,11 +600,12 @@ ggsave('ncaa_types_perc_success_type_elapsed.png', plot, width=4, height=4)
 ```
 
 ```{r}
-plot <- ggplot(df_half_interval_agg, aes(x=shot_type, y=prop_attempts, fill=shot_type)) +
-          geom_bar(stat="identity") +
+plot <- ggplot(df_half_interval_agg, aes(x=shot_type, y=prop_attempts, fill=shot_type, color=shot_type)) +
+          geom_bar(stat="identity", color=NA) +
           geom_text(aes(label=sprintf('%0.1f%%', prop_attempts*100)), size=2, color="black", family="Source Sans Pro Bold", hjust=-0.25) +
           coord_flip() +
           facet_wrap(~ min_interval) +
+          scale_color_brewer(palette="Set1", guide=F) +
           scale_fill_brewer(palette="Set1", guide=F) +
           scale_y_continuous(labels=percent, limits=c(0,1)) +
           labs(title=sprintf('Proportion of %s Basketball Shots by Type from NCAA Games', df_half_interval_agg %>% pull(total_attempts) %>% sum() %>% comma()),
@@ -651,11 +653,12 @@ ggsave('ncaa_types_perc_success_type_score.png', plot, width=4, height=4)
 ```
 
 ```{r}
-plot <- ggplot(df_half_score_agg, aes(x=shot_type, y=prop_attempts, fill=shot_type)) +
-          geom_bar(stat="identity") +
-          geom_text(aes(label=sprintf('%0.1f%%', prop_attempts*100)), size=2, color="black", family="Source Sans Pro Bold", hjust=-0.25) +
+plot <- ggplot(df_half_score_agg, aes(x=shot_type, y=prop_attempts, fill=shot_type, color=shot_type)) +
+          geom_bar(stat="identity", color=NA) +
+          geom_text(aes(label=sprintf('%0.1f%%', prop_attempts*100)), size=2, family="Source Sans Pro Bold", hjust=-0.25) +
           coord_flip() +
           facet_wrap(~ score_delta_interval) +
+          scale_color_brewer(palette="Set1", guide=F) +
           scale_fill_brewer(palette="Set1", guide=F) +
           scale_y_continuous(labels=percent, limits=c(0,1)) +
           labs(title=sprintf('Proportion of %s Basketball Shots by Type from NCAA Games', df_half_interval_agg %>% pull(total_attempts) %>% sum() %>% comma()),
