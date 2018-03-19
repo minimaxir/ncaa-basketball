@@ -187,8 +187,7 @@ plot <- P_half +
 ggsave('ncaa_count_attempts_half_log.png', plot, width=4, height=4)
 ```
 
-
-## Half Court, Faceted by Type of Shot
+## Bar Chart of Shot Types
 
 BigQuery:
 
@@ -217,10 +216,60 @@ df_half_types %>% head()
 ```
 
 ```{r}
+df_half_types_agg <- df_half_types %>%
+                        group_by(shot_type) %>%
+                        summarize(total_attempts = sum(attempts),
+                                  total_successes = sum(successes),
+                                  perc_success = total_successes/total_attempts,
+                                  avg_points = mean(avg_points)) %>%
+                        ungroup() %>%
+                        mutate(prop_attempts = total_attempts/sum(total_attempts)) %>%
+                        arrange(desc(total_attempts)) 
+
+df_half_types_agg$shot_type <- factor(df_half_types_agg$shot_type, levels=rev(df_half_types_agg$shot_type))
+```
+
+```{r}
+plot <- ggplot(df_half_types_agg, aes(x=shot_type, y=prop_attempts, fill=shot_type, color=shot_type)) +
+          geom_bar(stat="identity", color=NA) +
+          geom_text(aes(label=sprintf('%0.1f%%', prop_attempts*100)), size=3, family="Source Sans Pro Bold", hjust=-0.25) +
+          coord_flip() +
+          scale_color_brewer(palette="Set1", guide=F) +
+          scale_fill_brewer(palette="Set1", guide=F) +
+          scale_y_continuous(labels=percent, limits=c(0,1)) +
+          labs(title=sprintf('Proportion of %s Basketball Shots by Type from NCAA Games', df_half_types_agg %>% pull(total_attempts) %>% sum() %>% comma()),
+                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+               caption = "Max Woolf — minimaxir.com",
+               y = "Proportion of Shot Attempts Made") +
+          theme(axis.title.y = element_blank())
+
+ggsave('ncaa_types_prop_attempts.png', plot, width=4, height=2)
+```
+
+```{r}
+plot <- ggplot(df_half_types_agg, aes(x=shot_type, y=perc_success, fill=shot_type)) +
+          geom_bar(stat="identity") +
+          geom_text(aes(label=sprintf('%0.1f%%', perc_success*100)), size=3, color="white", family="Source Sans Pro Bold", hjust=1.25) +
+          coord_flip() +
+          scale_fill_brewer(palette="Set1", guide=F) +
+          scale_y_continuous(labels=percent, limits=c(0,1)) +
+          labs(title=sprintf('Shot Success of %s Basketball Shots by Type from NCAA Games', df_half_types_agg %>% pull(total_attempts) %>% sum() %>% comma()),
+                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+               caption = "Max Woolf — minimaxir.com",
+               y = "% of Successful Shots Made by Type") +
+          theme(axis.title.y = element_blank())
+
+ggsave('ncaa_types_perc.png', plot, width=4, height=2)
+```
+
+## Half Court, Faceted by Type of Shot
+
+```{r}
 df_half_types <- df_half_types %>% mutate(
   x = rescale(x, to = c(0, 47)),
   y = rescale(y, to = c(0, 50)),
-  perc_success = successes/attempts
+  perc_success = successes/attempts,
+  shot_type = factor(shot_type, levels=df_half_types_agg$shot_type)
 )
 
 df_half_types %>% head()
@@ -282,7 +331,8 @@ df_half_interval <- df_half_interval %>% mutate(
   x = rescale(x, to = c(0, 47)),
   y = rescale(y, to = c(0, 50)),
   perc_success = successes/attempts,
-  min_interval = factor(min_interval, labels = interval_levels)
+  min_interval = factor(min_interval, labels = interval_levels),
+  shot_type = factor(shot_type, levels=df_half_types_agg$shot_type)
 )
 
 df_half_interval %>% head()
@@ -353,7 +403,8 @@ df_half_score <- df_half_score %>% mutate(
   x = rescale(x, to = c(0, 47)),
   y = rescale(y, to = c(0, 50)),
   perc_success = successes/attempts,
-  score_delta_interval = factor(score_delta_interval, levels = score_levels)
+  score_delta_interval = factor(score_delta_interval, levels = score_levels),
+  shot_type = factor(shot_type, levels=df_half_types_agg$shot_type)
 )
 
 df_half_score %>% head()
@@ -372,56 +423,6 @@ plot <- P_half +
 
 ggsave('ncaa_count_attempts_half_score_log.png', plot, width=3, height=4)
 ```
-
-## Bar Chart of Shot Types
-
-```{r}
-df_half_types_agg <- df_half_types %>%
-                        group_by(shot_type) %>%
-                        summarize(total_attempts = sum(attempts),
-                                  total_successes = sum(successes),
-                                  perc_success = total_successes/total_attempts,
-                                  avg_points = mean(avg_points)) %>%
-                        ungroup() %>%
-                        mutate(prop_attempts = total_attempts/sum(total_attempts)) %>%
-                        arrange(desc(total_attempts)) 
-
-df_half_types_agg$shot_type <- factor(df_half_types_agg$shot_type, levels=rev(df_half_types_agg$shot_type))
-```
-
-```{r}
-plot <- ggplot(df_half_types_agg, aes(x=shot_type, y=prop_attempts, fill=shot_type, color=shot_type)) +
-          geom_bar(stat="identity", color=NA) +
-          geom_text(aes(label=sprintf('%0.1f%%', prop_attempts*100)), size=3, family="Source Sans Pro Bold", hjust=-0.25) +
-          coord_flip() +
-          scale_color_brewer(palette="Set1", guide=F) +
-          scale_fill_brewer(palette="Set1", guide=F) +
-          scale_y_continuous(labels=percent, limits=c(0,1)) +
-          labs(title=sprintf('Proportion of %s Basketball Shots by Type from NCAA Games', df_half_types_agg %>% pull(total_attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               caption = "Max Woolf — minimaxir.com",
-               y = "Proportion of Shot Attempts Made") +
-          theme(axis.title.y = element_blank())
-
-ggsave('ncaa_types_prop_attempts.png', plot, width=4, height=2)
-```
-
-```{r}
-plot <- ggplot(df_half_types_agg, aes(x=shot_type, y=perc_success, fill=shot_type)) +
-          geom_bar(stat="identity") +
-          geom_text(aes(label=sprintf('%0.1f%%', perc_success*100)), size=3, color="white", family="Source Sans Pro Bold", hjust=1.25) +
-          coord_flip() +
-          scale_fill_brewer(palette="Set1", guide=F) +
-          scale_y_continuous(labels=percent, limits=c(0,1)) +
-          labs(title=sprintf('Shot Success of %s Basketball Shots by Type from NCAA Games', df_half_types_agg %>% pull(total_attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               caption = "Max Woolf — minimaxir.com",
-               y = "% of Successful Shots Made by Type") +
-          theme(axis.title.y = element_blank())
-
-ggsave('ncaa_types_perc.png', plot, width=4, height=2)
-```
-
 
 ## Bar Charts of Elapsed Time, Faceted by Shot Type
 
