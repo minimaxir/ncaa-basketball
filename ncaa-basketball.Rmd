@@ -51,12 +51,6 @@ bb_theme <- theme(
                 legend.margin = margin(c(0, 0, -0.4, 0), unit='cm'))
 ```
 
-```{r}
-file_path <- "court.csv"
-df <- read_csv(file_path)
-df %>% head()
-```
-
 BigQuery:
 
 ```{sql eval=FALSE, include=TRUE}
@@ -70,8 +64,15 @@ FROM `bigquery-public-data.ncaa_basketball.mbb_pbp_sr`
 WHERE shot_type IS NOT NULL
 AND event_coord_x IS NOT NULL
 AND event_coord_y IS NOT NULL
+AND scheduled_date < '2018-03-15'
 GROUP BY x, y
 ORDER BY attempts DESC, avg_points DESC
+```
+
+```{r}
+file_path <- "court.csv"
+df <- read_csv(file_path)
+df %>% head()
 ```
 
 ```{r}
@@ -89,7 +90,7 @@ plot <- P_180 +
           stat_summary_2d(data=df, aes(x=x, y=y, z=attempts), alpha=0.8, binwidth=c(25/(2*25), 50/(2*47)), fun=sum) +
           scale_fill_viridis(option='inferno', end=1, labels=comma) +
           labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Starting with the 2013-14 season. Via Sportradar data in BigQuery',
                fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
           bb_theme
@@ -102,7 +103,7 @@ plot <- P_180 +
           stat_summary_2d(data=df, aes(x=x, y=y, z=attempts), alpha=0.8, binwidth=c(25/(2*25), 50/(2*47)), fun=sum) +
           scale_fill_viridis(option='inferno', end=1, labels=comma, trans='log10') +
           labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Starting with the 2013-14 season. Via Sportradar data in BigQuery',
                fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
           bb_theme
@@ -115,8 +116,8 @@ plot <- P_180 +
           stat_summary_2d(data=df, aes(x=x, y=y, z=perc_success), alpha=0.8, binwidth=c(25/(2*25), 50/(2*47)), fun=mean, drop=T) +
           scale_fill_viridis(option='viridis', end=1, label=percent) +
           labs(title=sprintf('Average Points Earned From of %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='Average Points Earned From Shot Attempts\nMade From Spot',
+                subtitle='Starting with the 2013-14 season. Via Sportradar data in BigQuery',
+               fill='% of Shots\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
           bb_theme
 
@@ -128,7 +129,7 @@ plot <- P_180 +
           stat_summary_2d(data=df, aes(x=x, y=y, z=avg_points), alpha=0.8, binwidth=c(25/(2*25), 50/(2*47)), fun=mean, drop=T) +
           scale_fill_viridis(option='viridis', end=1) +
           labs(title=sprintf('Average Points Earned From of %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Starting with the 2013-14 season. Via Sportradar data in BigQuery',
                fill='Average Points Earned From Shot Attempts\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
           bb_theme
@@ -153,6 +154,7 @@ WHERE shot_type IS NOT NULL
 AND event_coord_x IS NOT NULL
 AND event_coord_y IS NOT NULL
 AND IF(event_coord_x < 564, 'left', 'right') = team_basket
+AND scheduled_date < '2018-03-15'
 GROUP BY x, y
 ORDER BY attempts DESC, avg_points DESC
 ```
@@ -179,7 +181,7 @@ plot <- P_half +
           stat_summary_2d(data=df_half, aes(x=y, y=x, z=attempts), alpha=0.8, bins=100, fun=sum) +
           scale_fill_viridis(option='inferno', end=1, labels=comma, trans='log10') +
           labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Starting with the 2013-14 season. Via Sportradar data in BigQuery',
                fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
           bb_theme
@@ -204,6 +206,7 @@ WHERE shot_type IS NOT NULL
 AND event_coord_x IS NOT NULL
 AND event_coord_y IS NOT NULL
 AND IF(event_coord_x < 564, 'left', 'right') = team_basket
+AND scheduled_date < '2018-03-15'
 GROUP BY shot_type, x, y
 ORDER BY attempts DESC, avg_points DESC
 ```
@@ -238,7 +241,7 @@ plot <- ggplot(df_half_types_agg, aes(x=shot_type, y=prop_attempts, fill=shot_ty
           scale_fill_brewer(palette="Set1", guide=F) +
           scale_y_continuous(labels=percent, limits=c(0,1)) +
           labs(title=sprintf('Proportion of %s Basketball Shots by Type from NCAA Games', df_half_types_agg %>% pull(total_attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Starting with the 2013-14 season. Via Sportradar data in BigQuery',
                caption = "Max Woolf — minimaxir.com",
                y = "Proportion of Shot Attempts Made") +
           theme(axis.title.y = element_blank())
@@ -254,7 +257,7 @@ plot <- ggplot(df_half_types_agg, aes(x=shot_type, y=perc_success, fill=shot_typ
           scale_fill_brewer(palette="Set1", guide=F) +
           scale_y_continuous(labels=percent, limits=c(0,1)) +
           labs(title=sprintf('Shot Success of %s Basketball Shots by Type from NCAA Games', df_half_types_agg %>% pull(total_attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Starting with the 2013-14 season. Via Sportradar data in BigQuery',
                caption = "Max Woolf — minimaxir.com",
                y = "% of Successful Shots Made by Type") +
           theme(axis.title.y = element_blank())
@@ -282,10 +285,11 @@ plot <- P_half +
           scale_fill_viridis(option='inferno', end=1, labels=comma, trans='log10') +
           facet_wrap(~ shot_type, ncol=2) +
           labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_types %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Starting with the 2013-14 season. Via Sportradar data in BigQuery',
                fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
-          bb_theme
+          bb_theme +
+          theme(plot.title = element_text(size=7))
 
 ggsave('ncaa_count_attempts_half_types_log.png', plot, width=3, height=5)
 ```
@@ -294,9 +298,10 @@ ggsave('ncaa_count_attempts_half_types_log.png', plot, width=3, height=5)
 
 ```{sql eval=FALSE, include=TRUE}
 #standardSQL
-SELECT IF(elapsed_time_sec >= 60*40, 99, CAST(FLOOR(elapsed_time_sec/300) AS int64)) as min_interval,
+SELECT IF(elapsed_time_sec >= 60*40, 99, CAST(TRUNC((elapsed_time_sec-1)/300) AS int64)) as min_interval,
         IF(event_coord_x < 564, CAST(event_coord_x as int64), 1128 - CAST(event_coord_x as int64)) as x,
         IF(event_coord_x < 564, 600 - CAST(event_coord_y as int64), CAST(event_coord_y as int64)) as y,
+        shot_type,
         COUNT(*) as attempts,
         COUNTIF(points_scored IS NOT NULL) as successes, 
         AVG(IFNULL(CAST(points_scored as int64), 0)) as avg_points
@@ -305,7 +310,8 @@ WHERE shot_type IS NOT NULL
 AND event_coord_x IS NOT NULL
 AND event_coord_y IS NOT NULL
 AND IF(event_coord_x < 564, 'left', 'right') = team_basket
-GROUP BY min_interval, x, y
+AND scheduled_date < '2018-03-15'
+GROUP BY min_interval, shot_type, x, y
 ORDER BY attempts DESC, avg_points DESC
 ```
 
@@ -344,7 +350,7 @@ plot <- P_half +
           scale_fill_viridis(option='inferno', end=1, labels=comma, trans='log10') +
           facet_grid(min_interval ~ shot_type) +
           labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Facet title represents game time at shot.\nVia Sportradar data in BigQuery',
                fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
           bb_theme
@@ -376,7 +382,7 @@ SELECT CASE WHEN score_delta < -20 THEN '<-20'
 FROM (
 SELECT *, team_score - (game_score - team_score) as score_delta
   FROM (
-    SELECT event_coord_x, event_coord_y, points_scored, shot_type, team_basket,
+    SELECT event_coord_x, event_coord_y, points_scored, shot_type, team_basket, scheduled_date,
     SUM(IFNULL(CAST(points_scored as int64), 0)) OVER (PARTITION BY game_id, team_id ORDER BY timestamp) - IFNULL(CAST(points_scored as int64), 0) as team_score,
     SUM(IFNULL(CAST(points_scored as int64), 0)) OVER (PARTITION BY game_id ORDER BY timestamp) - IFNULL(CAST(points_scored as int64), 0) as game_score
     FROM `bigquery-public-data.ncaa_basketball.mbb_pbp_sr`
@@ -386,6 +392,7 @@ WHERE shot_type IS NOT NULL
 AND event_coord_x IS NOT NULL
 AND event_coord_y IS NOT NULL
 AND IF(event_coord_x < 564, 'left', 'right') = team_basket
+AND scheduled_date < '2018-03-15'
 GROUP BY score_delta_interval, shot_type, x, y
 ORDER BY attempts DESC, avg_points DESC
 ```
@@ -416,12 +423,12 @@ plot <- P_half +
           scale_fill_viridis(option='inferno', end=1, labels=comma, trans='log10') +
           facet_grid(score_delta_interval ~ shot_type) +
           labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_score %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Facet title represents team score difference relative to other team before shot.\nVia Sportradar data in BigQuery',
                fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
           bb_theme
 
-ggsave('ncaa_count_attempts_half_score_log.png', plot, width=3, height=4)
+ggsave('ncaa_count_attempts_half_score_log.png', plot, width=4, height=5.5)
 ```
 
 ## Bar Charts of Elapsed Time, Faceted by Shot Type
@@ -451,7 +458,7 @@ plot <- ggplot(df_half_interval_agg, aes(x=shot_type, y=perc_success, fill=shot_
           scale_fill_brewer(palette="Set1", guide=F) +
           scale_y_continuous(labels=percent, limits=c(0,1)) +
           labs(title=sprintf('Shot Success of %s Basketball Shots by Type from NCAA Games', df_half_interval_agg %>% pull(total_attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Facet title represents game time at shot.\nVia Sportradar data in BigQuery',
                caption = "Max Woolf — minimaxir.com",
                y = "% of Successful Shots Made by Type") +
           theme(axis.title.y = element_blank())
@@ -469,7 +476,7 @@ plot <- ggplot(df_half_interval_agg, aes(x=shot_type, y=prop_attempts, fill=shot
           scale_fill_brewer(palette="Set1", guide=F) +
           scale_y_continuous(labels=percent, limits=c(0,1)) +
           labs(title=sprintf('Proportion of %s Basketball Shots by Type from NCAA Games', df_half_interval_agg %>% pull(total_attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Facet title represents game time at shot.\nVia Sportradar data in BigQuery',
                caption = "Max Woolf — minimaxir.com",
                y = "Proportion of Shot Attempts Made") +
           theme(axis.title.y = element_blank())
@@ -504,7 +511,7 @@ plot <- ggplot(df_half_score_agg, aes(x=shot_type, y=perc_success, fill=shot_typ
           scale_fill_brewer(palette="Set1", guide=F) +
           scale_y_continuous(labels=percent, limits=c(0,1)) +
           labs(title=sprintf('Shot Success of %s Basketball Shots by Type from NCAA Games', df_half_interval_agg %>% pull(total_attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Facet title represents team score difference relative to other team before shot.\nVia Sportradar data in BigQuery',
                caption = "Max Woolf — minimaxir.com",
                y = "% of Successful Shots Made by Type") +
           theme(axis.title.y = element_blank())
@@ -522,7 +529,7 @@ plot <- ggplot(df_half_score_agg, aes(x=shot_type, y=prop_attempts, fill=shot_ty
           scale_fill_brewer(palette="Set1", guide=F) +
           scale_y_continuous(labels=percent, limits=c(0,1)) +
           labs(title=sprintf('Proportion of %s Basketball Shots by Type from NCAA Games', df_half_interval_agg %>% pull(total_attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
+                subtitle='Facet title represents team score difference relative to other team before shot.\nVia Sportradar data in BigQuery',
                caption = "Max Woolf — minimaxir.com",
                y = "Proportion of Shot Attempts Made by Type") +
           theme(axis.title.y = element_blank())
