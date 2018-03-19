@@ -1,5 +1,5 @@
 ---
-title: "A Visual Look at Stack Overflow's Question Tags"
+title: "Visualizing One Million NCAA Basketball Shots"
 author: "Max Woolf (@minimaxir)"
 date: "2018-03-19"
 output:
