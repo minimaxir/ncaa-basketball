@@ -73,7 +73,7 @@ ORDER BY attempts DESC, avg_points DESC
 
 ```{r}
 file_path <- "court.csv"
-df <- read_csv(file_path)
+df <- read_csv(file_path, progress=NA)
 df %>% head()
 ```
 
@@ -171,7 +171,7 @@ ORDER BY attempts DESC, avg_points DESC
 
 ```{r}
 file_path_half <- "half_court.csv"
-df_half <- read_csv(file_path_half)
+df_half <- read_csv(file_path_half, progress=NA)
 df_half %>% head()
 ```
 
@@ -225,7 +225,7 @@ ORDER BY attempts DESC, avg_points DESC
 
 ```{r}
 file_path_half_types <- "half_types.csv"
-df_half_types <- read_csv(file_path_half_types)
+df_half_types <- read_csv(file_path_half_types, progress=NA)
 df_half_types %>% head()
 ```
 
@@ -336,7 +336,7 @@ ORDER BY attempts DESC, avg_points DESC
 
 ```{r}
 file_path_half_interval <- "half_interval.csv"
-df_half_interval <- read_csv(file_path_half_interval)
+df_half_interval <- read_csv(file_path_half_interval, progress=NA)
 df_half_interval %>% head()
 ```
 
@@ -420,7 +420,7 @@ ORDER BY attempts DESC, avg_points DESC
 
 ```{r}
 file_path_half_score <- "half_score.csv"
-df_half_score <- read_csv(file_path_half_score)
+df_half_score <- read_csv(file_path_half_score, progress=NA)
 df_half_score %>% head()
 ```
 
