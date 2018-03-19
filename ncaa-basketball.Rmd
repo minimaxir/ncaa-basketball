@@ -115,7 +115,7 @@ ggsave('ncaa_count_attempts.png', plot, width=6, height=4)
 plot <- P_180 +
           stat_summary_2d(data=df, aes(x=x, y=y, z=perc_success), alpha=0.8, binwidth=c(25/(2*25), 50/(2*47)), fun=mean, drop=T) +
           scale_fill_viridis(option='viridis', end=1, label=percent) +
-          labs(title=sprintf('Average Points Earned From of %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
+          labs(title=sprintf('Average Points Earned From %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
                 subtitle='Starting with the 2013-14 season. Via Sportradar data in BigQuery',
                fill='% of Shots\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
@@ -535,6 +535,24 @@ plot <- ggplot(df_half_score_agg, aes(x=shot_type, y=prop_attempts, fill=shot_ty
           theme(axis.title.y = element_blank())
 
 ggsave('ncaa_types_prop_type_score.png', plot, width=4, height=4)
+```
+
+## Bonus Query to Check % of Cross Court
+
+```{sql eval=FALSE, include=TRUE}
+#standardSQL
+SELECT is_cross_court,
+      COUNT(*) as num_baskets
+FROM (
+SELECT team_basket, shot_type, event_coord_x, event_coord_y, scheduled_date,
+IF(event_coord_x < 564, 'left', 'right') != team_basket as is_cross_court
+FROM `bigquery-public-data.ncaa_basketball.mbb_pbp_sr`
+)
+WHERE shot_type IS NOT NULL
+AND event_coord_x IS NOT NULL
+AND event_coord_y IS NOT NULL
+AND scheduled_date < '2018-03-15'
+GROUP BY is_cross_court
 ```
 
 # LICENSE
