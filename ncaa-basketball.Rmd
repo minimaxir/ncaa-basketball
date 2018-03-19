@@ -1,7 +1,7 @@
 ---
 title: "A Visual Look at Stack Overflow's Question Tags"
 author: "Max Woolf (@minimaxir)"
-date: "2017-02-09"
+date: "2018-03-19"
 output:
   html_notebook:
     highlight: tango
@@ -10,7 +10,7 @@ output:
     theme: spacelab
 ---
 
-This R Notebook is the complement to my blog post [A Visual Overview of Stack Overflow's Question Tags](http://minimaxir.com/2018/02/stack-overflow-questions/).
+This R Notebook is the complement to my blog post [Visualizing One Million NCAA Basketball Shots](http://minimaxir.com/2018/03/basketball-shots/).
 
 This notebook is licensed under the MIT License. If you use the code or data visualization designs contained within this notebook, it would be greatly appreciated if proper attribution is given back to this notebook and/or myself. Thanks! :)
 
@@ -98,6 +98,8 @@ plot <- P_180 +
 ggsave('ncaa_count_attempts_unlog.png', plot, width=6, height=4)
 ```
 
+![](ncaa_count_attempts_unlog.png)
+
 ```{r}
 plot <- P_180 +
           stat_summary_2d(data=df, aes(x=x, y=y, z=attempts), alpha=0.8, binwidth=c(25/(2*25), 50/(2*47)), fun=sum) +
@@ -111,18 +113,22 @@ plot <- P_180 +
 ggsave('ncaa_count_attempts.png', plot, width=6, height=4)
 ```
 
+![](ncaa_count_attempts.png)
+
 ```{r}
 plot <- P_180 +
           stat_summary_2d(data=df, aes(x=x, y=y, z=perc_success), alpha=0.8, binwidth=c(25/(2*25), 50/(2*47)), fun=mean, drop=T) +
           scale_fill_viridis(option='viridis', end=1, label=percent) +
-          labs(title=sprintf('Average Points Earned From %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
+          labs(title=sprintf('Shot Success of %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
                 subtitle='Starting with the 2013-14 season. Via Sportradar data in BigQuery',
-               fill='% of Shots\nMade From Spot',
+               fill='% of Successful Shots\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
           bb_theme
 
 ggsave('ncaa_count_perc_success.png', plot, width=6, height=4)
 ```
+
+![](ncaa_count_perc_success.png)
 
 ```{r}
 plot <- P_180 +
@@ -137,10 +143,11 @@ plot <- P_180 +
 ggsave('ncaa_count_avg_points.png', plot, width=6, height=4)
 ```
 
+![](ncaa_count_avg_points.png)
 
 ## Half Court
 
-Query:
+BigQuery:
 
 ```{sql eval=FALSE, include=TRUE}
 #standardSQL
@@ -188,6 +195,8 @@ plot <- P_half +
 
 ggsave('ncaa_count_attempts_half_log.png', plot, width=4, height=4)
 ```
+
+![](ncaa_count_attempts_half_log.png)
 
 ## Bar Chart of Shot Types
 
@@ -249,6 +258,8 @@ plot <- ggplot(df_half_types_agg, aes(x=shot_type, y=prop_attempts, fill=shot_ty
 ggsave('ncaa_types_prop_attempts.png', plot, width=4, height=2)
 ```
 
+![](ncaa_types_prop_attempts.png)
+
 ```{r}
 plot <- ggplot(df_half_types_agg, aes(x=shot_type, y=perc_success, fill=shot_type)) +
           geom_bar(stat="identity") +
@@ -264,6 +275,8 @@ plot <- ggplot(df_half_types_agg, aes(x=shot_type, y=perc_success, fill=shot_typ
 
 ggsave('ncaa_types_perc.png', plot, width=4, height=2)
 ```
+
+![](ncaa_types_perc.png)
 
 ## Half Court, Faceted by Type of Shot
 
@@ -294,7 +307,11 @@ plot <- P_half +
 ggsave('ncaa_count_attempts_half_types_log.png', plot, width=3, height=5)
 ```
 
+![](ncaa_count_attempts_half_types_log.png)
+
 ## Half Court, Faceted by 10 Minute Time Buckets.
+
+BigQuery:
 
 ```{sql eval=FALSE, include=TRUE}
 #standardSQL
@@ -322,14 +339,14 @@ df_half_interval %>% head()
 ```
 
 ```{r}
-interval_levels = c('1st\n20:00 — 15:00',
-                    '1st\n14:59 — 10:00',
-                    '1st\n09:59 — 05:00',
-                    '1st\n04:59 — 00:00',
-                    '2nd\n20:00 — 15:00',
-                    '2nd\n14:59 — 10:00',
-                    '2nd\n09:59 — 05:00',
-                    '2nd\n04:59 — 00:00',
+interval_levels = c('1st Half\n20:00 — 15:00',
+                    '1st Half\n14:59 — 10:00',
+                    '1st Half\n09:59 — 05:00',
+                    '1st Half\n04:59 — 00:00',
+                    '2nd Half\n20:00 — 15:00',
+                    '2nd Half\n14:59 — 10:00',
+                    '2nd Half\n09:59 — 05:00',
+                    '2nd Half\n04:59 — 00:00',
                     'OT')
 
 
@@ -349,7 +366,7 @@ plot <- P_half +
           stat_summary_2d(data=df_half_interval, aes(x=y, y=x, z=attempts), alpha=0.8, bins=25, fun=sum) +
           scale_fill_viridis(option='inferno', end=1, labels=comma, trans='log10') +
           facet_grid(min_interval ~ shot_type) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
+          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_interval %>% pull(attempts) %>% sum() %>% comma()),
                 subtitle='Facet title represents game time at shot.\nVia Sportradar data in BigQuery',
                fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
                caption = "Max Woolf — minimaxir.com") +
@@ -357,6 +374,8 @@ plot <- P_half +
 
 ggsave('ncaa_count_attempts_half_interval_log.png', plot, width=4, height=7)
 ```
+
+![](ncaa_count_attempts_half_interval_log.png)
 
 ## Half Court, by Point Delta at Time of Shot
 
@@ -431,6 +450,8 @@ plot <- P_half +
 ggsave('ncaa_count_attempts_half_score_log.png', plot, width=4, height=5.5)
 ```
 
+![](ncaa_count_attempts_half_score_log.png)
+
 ## Bar Charts of Elapsed Time, Faceted by Shot Type
 
 ```{r}
@@ -466,6 +487,8 @@ plot <- ggplot(df_half_interval_agg, aes(x=shot_type, y=perc_success, fill=shot_
 ggsave('ncaa_types_perc_success_type_elapsed.png', plot, width=4, height=4)
 ```
 
+![](ncaa_types_perc_success_type_elapsed.png)
+
 ```{r}
 plot <- ggplot(df_half_interval_agg, aes(x=shot_type, y=prop_attempts, fill=shot_type, color=shot_type)) +
           geom_bar(stat="identity", color=NA) +
@@ -483,6 +506,8 @@ plot <- ggplot(df_half_interval_agg, aes(x=shot_type, y=prop_attempts, fill=shot
 
 ggsave('ncaa_types_prop_type_elapsed.png', plot, width=4, height=4)
 ```
+
+![](ncaa_types_prop_type_elapsed.png)
 
 ## Bar Charts of Score Delta, Faceted by Shot Type
 
@@ -519,6 +544,8 @@ plot <- ggplot(df_half_score_agg, aes(x=shot_type, y=perc_success, fill=shot_typ
 ggsave('ncaa_types_perc_success_type_score.png', plot, width=4, height=4)
 ```
 
+![](ncaa_types_perc_success_type_score.png)
+
 ```{r}
 plot <- ggplot(df_half_score_agg, aes(x=shot_type, y=prop_attempts, fill=shot_type, color=shot_type)) +
           geom_bar(stat="identity", color=NA) +
@@ -537,7 +564,9 @@ plot <- ggplot(df_half_score_agg, aes(x=shot_type, y=prop_attempts, fill=shot_ty
 ggsave('ncaa_types_prop_type_score.png', plot, width=4, height=4)
 ```
 
-## Bonus Query to Check % of Cross Court
+![](ncaa_types_prop_type_score.png)
+
+## Bonus Query to Check % of Cross Court Shots
 
 ```{sql eval=FALSE, include=TRUE}
 #standardSQL
