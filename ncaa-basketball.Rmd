@@ -177,19 +177,6 @@ df_half %>% head()
 ```{r}
 plot <- P_half +
           stat_summary_2d(data=df_half, aes(x=y, y=x, z=attempts), alpha=0.8, bins=100, fun=sum) +
-          scale_fill_viridis(option='inferno', end=1, labels=comma) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
-               caption = "Max Woolf — minimaxir.com") +
-          bb_theme
-
-ggsave('ncaa_count_attempts_half_unlog.png', plot, width=4, height=4)
-```
-
-```{r}
-plot <- P_half +
-          stat_summary_2d(data=df_half, aes(x=y, y=x, z=attempts), alpha=0.8, bins=100, fun=sum) +
           scale_fill_viridis(option='inferno', end=1, labels=comma, trans='log10') +
           labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half %>% pull(attempts) %>% sum() %>% comma()),
                 subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
@@ -200,39 +187,10 @@ plot <- P_half +
 ggsave('ncaa_count_attempts_half_log.png', plot, width=4, height=4)
 ```
 
-```{r}
-mean_thresh <- function(x) {if (length(x) > 3) return (mean(x)) else return (NA) }
-
-plot <- P_half +
-          stat_summary_2d(data=df_half, aes(x=y, y=x, z=perc_success), alpha=0.9, bins=100, fun=mean_thresh, drop=T) +
-          scale_fill_viridis(option='viridis', end=1, labels=percent, limits=c(0,1)) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
-               caption = "Max Woolf — minimaxir.com") +
-          bb_theme
-
-ggsave('ncaa_count_attempts_half_perc_success.png', plot, width=4, height=4)
-```
-
-```{r}
-mean_thresh <- function(x) {if (length(x) > 3) return (mean(x)) else return (NA) }
-
-plot <- P_half +
-          stat_summary_2d(data=df_half, aes(x=y, y=x, z=avg_points), alpha=0.9, bins=100, fun=mean) +
-          scale_fill_viridis(option='viridis', end=1) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
-               caption = "Max Woolf — minimaxir.com") +
-          bb_theme
-
-ggsave('ncaa_count_attempts_half_avg_points.png', plot, width=4, height=4)
-```
 
 ## Half Court, Faceted by Type of Shot
 
-Query:
+BigQuery:
 
 ```{sql eval=FALSE, include=TRUE}
 #standardSQL
@@ -268,19 +226,6 @@ df_half_types <- df_half_types %>% mutate(
 df_half_types %>% head()
 ```
 
-```{r}
-plot <- P_half +
-          stat_summary_2d(data=df_half_types, aes(x=y, y=x, z=attempts), alpha=0.8, bins=100, fun=sum) +
-          scale_fill_viridis(option='inferno', end=1, labels=comma) +
-          facet_wrap(~ shot_type, ncol=2) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_types %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
-               caption = "Max Woolf — minimaxir.com") +
-          bb_theme
-
-ggsave('ncaa_count_attempts_half_types_unlog.png', plot, width=4, height=5)
-```
 
 ```{r}
 plot <- P_half +
@@ -294,34 +239,6 @@ plot <- P_half +
           bb_theme
 
 ggsave('ncaa_count_attempts_half_types_log.png', plot, width=3, height=5)
-```
-
-```{r}
-plot <- P_half +
-          stat_summary_2d(data=df_half_types, aes(x=y, y=x, z=perc_success), alpha=0.9, bins=100, fun=mean_thresh, drop=T) +
-          scale_fill_viridis(option='viridis', end=1, labels=percent, limits=c(0,1)) +
-          facet_wrap(~ shot_type, ncol=2) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_types %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
-               caption = "Max Woolf — minimaxir.com") +
-          bb_theme
-
-ggsave('ncaa_count_attempts_half_types_perc_success.png', plot, width=3, height=5)
-```
-
-```{r}
-plot <- P_half +
-          stat_summary_2d(data=df_half_types, aes(x=y, y=x, z=avg_points), alpha=0.9, bins=100, fun=mean) +
-          scale_fill_viridis(option='viridis', end=1) +
-          facet_wrap(~ shot_type, ncol=2) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_types %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
-               caption = "Max Woolf — minimaxir.com") +
-          bb_theme
-
-ggsave('ncaa_count_attempts_half_types_avg_points.png', plot, width=3, height=5)
 ```
 
 ## Half Court, Faceted by 10 Minute Time Buckets.
@@ -374,20 +291,6 @@ df_half_interval %>% head()
 ```{r}
 plot <- P_half +
           stat_summary_2d(data=df_half_interval, aes(x=y, y=x, z=attempts), alpha=0.8, bins=25, fun=sum) +
-          scale_fill_viridis(option='inferno', end=1, labels=comma) +
-          facet_grid(min_interval ~ shot_type) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_interval %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
-               caption = "Max Woolf — minimaxir.com") +
-          bb_theme
-
-ggsave('ncaa_count_attempts_half_interval_unlog.png', plot, width=4, height=7)
-```
-
-```{r}
-plot <- P_half +
-          stat_summary_2d(data=df_half_interval, aes(x=y, y=x, z=attempts), alpha=0.8, bins=25, fun=sum) +
           scale_fill_viridis(option='inferno', end=1, labels=comma, trans='log10') +
           facet_grid(min_interval ~ shot_type) +
           labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df %>% pull(attempts) %>% sum() %>% comma()),
@@ -399,35 +302,9 @@ plot <- P_half +
 ggsave('ncaa_count_attempts_half_interval_log.png', plot, width=4, height=7)
 ```
 
-```{r}
-plot <- P_half +
-          stat_summary_2d(data=df_half_interval, aes(x=y, y=x, z=perc_success), alpha=0.9, bins=50, fun=mean) +
-          scale_fill_viridis(option='viridis', end=1, labels=percent, limits=c(0,1)) +
-          facet_grid(min_interval ~ shot_type) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_interval %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
-               caption = "Max Woolf — minimaxir.com") +
-          bb_theme
-
-ggsave('ncaa_count_attempts_half_interval_perc_success.png', plot, width=4, height=7)
-```
-
-```{r}
-plot <- P_half +
-          stat_summary_2d(data=df_half_interval, aes(x=y, y=x, z=avg_points), alpha=0.9, bins=100, fun=mean) +
-          scale_fill_viridis(option='viridis', end=1) +
-          facet_grid(min_interval ~ shot_type) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_interval %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
-               caption = "Max Woolf — minimaxir.com") +
-          bb_theme
-
-ggsave('ncaa_count_attempts_half_types_avg_points.png', plot, width=4, height=7)
-```
-
 ## Half Court, by Point Delta at Time of Shot
+
+BigQuery:
 
 ```{sql eval=FALSE, include=TRUE}
 #standardSQL
@@ -485,20 +362,6 @@ df_half_score %>% head()
 ```{r}
 plot <- P_half +
           stat_summary_2d(data=df_half_score, aes(x=y, y=x, z=attempts), alpha=0.8, bins=25, fun=sum) +
-          scale_fill_viridis(option='inferno', end=1, labels=comma) +
-          facet_grid(score_delta_interval ~ shot_type) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_score %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
-               caption = "Max Woolf — minimaxir.com") +
-          bb_theme
-
-ggsave('ncaa_count_attempts_half_score_unlog.png', plot, width=3, height=4)
-```
-
-```{r}
-plot <- P_half +
-          stat_summary_2d(data=df_half_score, aes(x=y, y=x, z=attempts), alpha=0.8, bins=25, fun=sum) +
           scale_fill_viridis(option='inferno', end=1, labels=comma, trans='log10') +
           facet_grid(score_delta_interval ~ shot_type) +
           labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_score %>% pull(attempts) %>% sum() %>% comma()),
@@ -508,34 +371,6 @@ plot <- P_half +
           bb_theme
 
 ggsave('ncaa_count_attempts_half_score_log.png', plot, width=3, height=4)
-```
-
-```{r}
-plot <- P_half +
-          stat_summary_2d(data=df_half_score, aes(x=y, y=x, z=perc_success), alpha=0.9, bins=25, fun=mean_thresh, drop=T) +
-          scale_fill_viridis(option='viridis', end=1, labels=percent, limits=c(0,1)) +
-          facet_grid(score_delta_interval ~ shot_type) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_score %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
-               caption = "Max Woolf — minimaxir.com") +
-          bb_theme
-
-ggsave('ncaa_count_attempts_half_score_perc_success.png', plot, width=3, height=4)
-```
-
-```{r}
-plot <- P_half +
-          stat_summary_2d(data=df_half_score, aes(x=y, y=x, z=avg_points), alpha=0.9, bins=25, fun=mean) +
-          scale_fill_viridis(option='viridis', end=1) +
-          facet_grid(score_delta_interval ~ shot_type) +
-          labs(title=sprintf('Heat Map of %s Basketball Shots from NCAA Games', df_half_score %>% pull(attempts) %>% sum() %>% comma()),
-                subtitle='Starting with the 2013-14 season. Via Sportradar data located in BigQuery',
-               fill='# of 2pt/3pt Shot Attempts\nMade From Spot',
-               caption = "Max Woolf — minimaxir.com") +
-          bb_theme
-
-ggsave('ncaa_count_attempts_half_score_avg_points.png', plot, width=4, height=4)
 ```
 
 ## Bar Chart of Shot Types
