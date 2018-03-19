@@ -21,6 +21,8 @@ library(tidyverse)
 library(scales)
 library(viridis)
 
+# Special thanks to Ewen Gallic for his implementation of a ggplot2 basketball court
+# http://egallic.fr/en/drawing-a-basketball-court-with-r/
 source("bb_court_college.R")
 
 sessionInfo()
